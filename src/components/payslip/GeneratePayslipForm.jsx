@@ -39,10 +39,10 @@ const GeneratePayslipForm = ({employees, onSuccess}) => {
                     <div className='grid grid-cols-2 gap-4'>
                         <div>
                             <label className='block text-sm font-medium text-slate-700 mb-2'>Month</label>
-                            <select>
-                                {Array.from({length: 12}, (_, i) => i + 1).map((month) => (
-                                    <option key={month} value={month}>
-                                        {month}
+                            <select name='month' required>
+                                {Array.from({length: 12}, (_, i) => i + 1).map((m) => (
+                                    <option key={m} value={m}>
+                                        {m}
                                     </option>
                                 ))}
                             </select>
