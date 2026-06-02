@@ -1,6 +1,7 @@
 import Employee from "../models/Employee.js";
 import Attendance from "../models/Attendance.js";
 import LeaveApplication from "../models/LeaveApplication.js";
+import Payslip from "../models/Payslip.js";
 import {DEPARTMENTS} from "../constants/departments.js";
 
 export const getDashboard = async (req, res) => {
@@ -41,7 +42,7 @@ export const getDashboard = async (req, res) => {
                         $gte: new Date(today.getFullYear(), today.getMonth(), 1),
                         $lt: new Date(today.getFullYear(), today.getMonth() + 1, 1)
                     }
-                }).
+                }),
                     LeaveApplication.countDocuments({
                         employeeId: employee._id,
                     status: "PENDING",
