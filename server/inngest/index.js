@@ -3,7 +3,7 @@ import Attendance from "../models/Attendance.js";
 import Employee from "../models/Employee.js";
 import LeaveApplication from "../models/LeaveApplication.js";
 import sendEmail from "../config/nodemailer.js";
-import employee from "../models/Employee.js";
+
 
 export const inngest = new Inngest({ id: 'fullstack-ems'});
 
@@ -90,8 +90,7 @@ const leaveApplicationReminder = inngest.createFunction(
 )
 
 const attendanceReminderCron = inngest.createFunction(
-    {id: "attendance-reminder-cron", triggers: [{cron: "0 30 15 * * *"}] },
-
+        {id: "attendance-reminder-cron", triggers: [{cron: "TZ=America/New_York 30 11 * * *"}] },
     async ({ step }) => {
         const today = await step.run("get-today-date", ()=> {
 
@@ -119,7 +118,7 @@ const attendanceReminderCron = inngest.createFunction(
 
         const onLeaveIds = await step.run("get-on-leave-ids", async ()=> {
             const leaves = await LeaveApplication.find({
-                stats: "APPROVED",
+                status: "APPROVED",
                 startDate: {$gte: new Date(today.endUTC)},
                 endDate: {$gte: new Date(today.startUTC)},
             }).lean();
@@ -141,16 +140,16 @@ const attendanceReminderCron = inngest.createFunction(
                 const emailPromises = absentEmployees.map(async (e)=> {
                     // send email
                     await sendEmail({
-                        to: employee.email,
+                        to: e.email,
                         subject: "Attendance Reminder - Please Mark Your Attendance",
                         body: `
                             <div style="max-width: 600px; font-family: Arial, sans-serif;">
-                                <h2>Hi ${emp.firstName}, 👋</h2>
+                                <h2>Hi ${e.firstName}, 👋</h2>
                                 <p style="font-size: 16px;">We noticed you haven't marked your attendance yet today.</p>
                                 <p style="font-size: 16px;">The deadline was <strong>11:30 AM</strong> and your attendance is still missing.</p>
                                 <p style="font-size: 16px;">Please check in as soon as possible or contact your admin if you're facing any issues.</p>
                                 <br />
-                                <p style="font-size: 14px; color: #666;">Department: ${emp.department}</p>
+                                <p style="font-size: 14px; color: #666;">Department: ${e.department}</p>
                                 <br />
                                 <p style="font-size: 16px;">Best Regards,</p>
                                 <p style="font-size: 16px;"><strong>QuickEMS</strong></p>
