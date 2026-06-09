@@ -2,6 +2,8 @@ import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import {DEPARTMENTS} from "../assets/assets.jsx";
 import {Loader2Icon} from "lucide-react";
+import api from "../api/axios.js";
+import toast from "react-hot-toast";
 
 const EmployeeForm = ({initialData, onSuccess, onCancel}) => {
 
@@ -11,7 +13,25 @@ const EmployeeForm = ({initialData, onSuccess, onCancel}) => {
 
     const handleSubmit = async (e) => {
             e.preventDefault();
+            setLoading(true);
+            const formData = new FormData(e.currentTarget);
+            const data = Object.fromEntries(formData.entries());
 
+            if(isEditMode && !data.password){
+                delete data.password;
+            }
+
+            try {
+                const url = isEditMode ? `/employees/${initialData.id}` : "/employees";
+                const method = isEditMode ? "put" : "post";
+                await api[method](url, data);
+                onSuccess ? onSuccess() : navigate("/employees");
+
+            }catch (error) {
+                toast.error(error.response?.data?.message ||error.message);
+            } finally {
+                setLoading(false);
+            }
     }
     return (
         <form onSubmit={handleSubmit} className='space-y-6 max-w-3xl animate-fade-in'>
@@ -33,11 +53,11 @@ const EmployeeForm = ({initialData, onSuccess, onCancel}) => {
                     </div>
                     <div>
                         <label className='block mb-2'>Join Date</label>
-                        <input type="data" name="joinDate" required defaultValue={initialData?.joinDate ? new Date(initialData.joinDate).toISOString().split('T')[0] : ''} />
+                        <input type="date" name="joinDate" required defaultValue={initialData?.joinDate ? new Date(initialData.joinDate).toISOString().split('T')[0] : ''} />
                     </div>
                     <div className='sm:col-span-2'>
                         <label className='block mb-2'>Bio (Optional)</label>
-                        <textarea name="bio" required defaultValue={initialData?.bio} rows={3} className='resize-none' placeholder='Brief description...' />
+                        <textarea name="bio" defaultValue={initialData?.bio} rows={3} className='resize-none' placeholder='Brief description...' />
                     </div>
                 </div>
             </div>

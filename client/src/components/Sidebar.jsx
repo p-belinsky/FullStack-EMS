@@ -1,32 +1,37 @@
 import {useLocation} from "react-router-dom";
 import {useEffect, useState} from "react";
-import {dummyProfileData} from "../assets/assets.jsx";
 import {
     CalendarIcon, ChevronRightIcon,
     DollarSignIcon,
     FileTextIcon,
-    LayoutGrid, LogOutIcon,
+    LayoutGrid, Loader2, LogOutIcon,
     MenuIcon,
     SettingsIcon,
     UserIcon,
     XIcon
 } from "lucide-react";
 import {Link} from "react-router-dom";
+import {useAuth} from "../context/AuthContext.jsx";
+import api from "../api/axios.js";
 
 const Sidebar = () => {
     const {pathname} = useLocation();
     const [userName, setUserName] = useState("");
     const [mobileOpen, setMobileOpen] = useState(false);
 
+    const {user, loading, logout} = useAuth()
+
     useEffect(() => {
-        setUserName(dummyProfileData.firstName + " " + dummyProfileData.lastName);
+        api.get("/profile").then(({data}) => {
+            if(data.firstName) setUserName(`${data.firstName} ${data.lastName || ""}`.trim())
+        })
     }, []);
 
     useEffect(() => {
         setMobileOpen(false);
     }, [pathname])
 
-    const role = "" || "EMPLOYEE"
+    const role = user?.role;
     const navItems = [
         {
             name: "Dashboard",
@@ -63,6 +68,7 @@ const Sidebar = () => {
     ]
 
     const handleLogout = () => {
+        logout();
         window.location.href = "/login";
     }
 
@@ -106,20 +112,28 @@ const Sidebar = () => {
             </div>
 
             <div className='flex-1 px-3 space-y-0.5 overflow-y-auto'>
-                {navItems.map((item)=>{
-                    const isActive = pathname.startsWith(item.href)
-                    return (
-                        <Link key={item.href} to={item.href} className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative ${isActive ? "bg-indigo-500/10 text-indigo-100" : "text-slate-400 hover:bg-white/5 hover:text-slate-100"}`}>
-                            {isActive &&
-                                <div className='absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500'/>
-                            }
-                            <item.icon className={`w-[17px] h-[17px] shrink-0 ${isActive ? "text-indigo-300" : "text-slate-400 group-hover:text-slate-300"}`}/>
-                            <span className='flex-1 text-[13px] font-medium'>{item.name}</span>
-                            {isActive && <ChevronRightIcon className='w-3.5 h-3.5 text-indigo-500/50'/> }
-                        </Link>
-                    )
+                {loading ? (
+                    <div className='px-3 py-3 flex items-center gap-2 text-slate-500'>
+                        <Loader2 className='animate-spin w-4 h-4'/>
+                        <span className='text-sm'>Loading...</span>
+                    </div>
+                ) : (
+                    navItems.map((item)=>{
+                            const isActive = pathname.startsWith(item.href)
+                            return (
+                                <Link key={item.href} to={item.href} className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative ${isActive ? "bg-indigo-500/10 text-indigo-100" : "text-slate-400 hover:bg-white/5 hover:text-slate-100"}`}>
+                                    {isActive &&
+                                        <div className='absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500'/>
+                                    }
+                                    <item.icon className={`w-[17px] h-[17px] shrink-0 ${isActive ? "text-indigo-300" : "text-slate-400 group-hover:text-slate-300"}`}/>
+                                    <span className='flex-1 text-[13px] font-medium'>{item.name}</span>
+                                    {isActive && <ChevronRightIcon className='w-3.5 h-3.5 text-indigo-500/50'/> }
+                                </Link>
+                            )
 
-                })}
+                        })
+                )}
+
             </div>
 
             <div className='p-3 border-t border-white/6'>
