@@ -134,7 +134,7 @@ const attendanceReminderCron = inngest.createFunction(
 
         const absentEmployees = activeEmployees.filter((e)=> !onLeaveIds.includes(e._id) && !checkedInIds.includes(e._id))
 
-        //send email
+
         if(absentEmployees.length > 0){
             await step.run("send-reminder-emails", async ()=>{
                 const emailPromises = absentEmployees.map(async (e)=> {
@@ -157,11 +157,11 @@ const attendanceReminderCron = inngest.createFunction(
                         `
                     })
                 })
+                await Promise.all(emailPromises)
             })
         }
-
         return {totalActive: activeEmployees.length, onLeave: onLeaveIds.length, checkedIn: checkedInIds.length, absent: absentEmployees.length}
-    },
+    }
 )
 
 export const functions = [autoCheckOut, leaveApplicationReminder, attendanceReminderCron];

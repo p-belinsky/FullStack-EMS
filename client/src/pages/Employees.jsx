@@ -3,6 +3,7 @@ import {dummyEmployeeData, DEPARTMENTS} from "../assets/assets.jsx";
 import {Plus, Search, X} from "lucide-react";
 import EmployeeCard from "../components/EmployeeCard.jsx";
 import EmployeeForm from "../components/EmployeeForm.jsx";
+import api from "../api/axios.js";
 
 
 const Employees = () => {
@@ -15,11 +16,15 @@ const Employees = () => {
     const [showCreateModal, setShowCreateModal] = useState(false)
 
     const fetchEmployees = useCallback( async () => {
-        setLoading(true);
-        setEmployees(dummyEmployeeData.filter((emp)=>(selectDepartment ? emp.department === selectDepartment : emp)))
-        setTimeout(()=>{
+        try {
+            const url = selectDepartment ? `/employees?department=${selectDepartment}` : "/employees"
+            const res = await api.get(url)
+            setEmployees(res.data)
+        }catch (error) {
+            console.error("Failed to fetch employees")
+        }finally {
             setLoading(false)
-        }, 1000)
+        }
     }, [selectDepartment])
 
     useEffect(() => {
@@ -88,10 +93,7 @@ const Employees = () => {
                             </button>
                         </div>
                         <div className='p-6'>
-                            <form className='space-y-5'>
-                                <EmployeeForm onSuccess={()=>{setShowCreateModal(false); fetchEmployees();}} onCancel={()=>setShowCreateModal(false)}/>
-
-                            </form>
+                            <EmployeeForm onSuccess={()=>{setShowCreateModal(false); fetchEmployees();}} onCancel={()=>setShowCreateModal(false)}/>
                         </div>
                     </div>
                 </div>
@@ -114,9 +116,7 @@ const Employees = () => {
                             </button>
                         </div>
                         <div className='p-6'>
-                            <form className='space-y-5'>
-                                <EmployeeForm initialData={editEmployee} onSuccess={()=>{setEditEmployee(null); fetchEmployees();}} onCancel={()=>setEditEmployee(null)}/>
-                            </form>
+                            <EmployeeForm initialData={editEmployee} onSuccess={()=>{setEditEmployee(null); fetchEmployees();}} onCancel={()=>setEditEmployee(null)}/>
                         </div>
                     </div>
 

@@ -3,6 +3,7 @@ import {useEffect, useState} from "react";
 import {dummyPayslipData} from "../assets/assets.jsx";
 import Loading from "../components/Loading.jsx";
 import {format} from "date-fns";
+import api from "../api/axios.js";
 
 const PrintPayslip = () => {
 
@@ -11,11 +12,7 @@ const PrintPayslip = () => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        setPayslip(dummyPayslipData.find((slip)=>slip._id === id))
-        setTimeout(() => {
-            setLoading(false)
-        }, 1000)
-    }, [id]);
+        api.get(`/payslips/${id}`).then((res) => setPayslip(res.data)).catch(console.error).finally(()=> setLoading(false)) }, [id]);
 
     if(loading) return <Loading/>
     if(!payslip) return <p className='text-center text-slate-400 py-12'>Payslip not found</p>
